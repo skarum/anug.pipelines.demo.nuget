@@ -27,15 +27,18 @@ stages:
     - script: |
         echo '##vso[task.setvariable variable=nugetVersion]$(buildVersion)
       name: 'Set_Nuget_Version_To_Buildnumber_For_Master_Branch'
+      displayName: 'Set NuGet version to buildnumber for master branch'
       condition: eq(variables['Build.SourceBranch'],'refs/heads/master')
       #in case this is a pull request define package version as a rc ( release candidate )
     - script: | 
         echo '##vso[task.setvariable variable=nugetVersion]$(buildVersion)-rc$(Build.BuildId)
       name: 'Set_Nuget_Version_To_Buildnumber_For_Pull_Requests'
+      displayName: 'Set NuGet version to buildnumber for pull requests'
       condition: ne(variables['Build.SourceBranch'],'refs/heads/master')
 
     - powershell: echo "##vso[task.setvariable variable=nugetVersion;isOutput=true]$(nugetVersion)"
       name: outputNugetVersion
+      displayName: 'Output Nuget version variable to use in next job'
 
   - job: Build
 
