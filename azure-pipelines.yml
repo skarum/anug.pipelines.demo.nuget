@@ -44,7 +44,8 @@ steps:
     command: 'build'
     projects: '**/*.csproj'
     feedsToUse: 'select'
-    versioningScheme: 'off'
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'BuildVersion'
     configuration: $(BuildConfiguration)
     # arguments: '/p:PackageVersion=$(NugetVersion) /p:Version=$(BuildVersion) /p:FileVersion=$(BuildVersion)'
 
@@ -62,5 +63,5 @@ steps:
     packDirectory: $(Build.ArtifactStagingDirectory)
     nobuild: true
     packagesToPack: '$(PackageCsproj)'
-    versioningScheme: byEnvVar
-    versionEnvVar: NugetVersion
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'NugetVersion'
