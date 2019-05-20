@@ -67,7 +67,6 @@ stages:
         command: 'restore'
         projects: '**/*.csproj'
         feedsToUse: 'select'
-        versioningScheme: 'off'
         arguments: '--configuration $(BuildConfiguration)'
 
     - task: DotNetCoreCLI@2
@@ -76,9 +75,7 @@ stages:
         command: 'build'
         projects: '**/*.csproj'
         feedsToUse: 'select'
-        versioningScheme: 'byEnvVar'
-        versionEnvVar: 'BuildVersion'
-        arguments: '--configuration $(BuildConfiguration) /p:PackageOutputPath=$(Build.ArtifactStagingDirectory) /p:PackageVersion=$(nugetVersion) /p:Version=$(buildVersion) /p:FileVersion=$(buildVersion)'
+        arguments: '--configuration $(BuildConfiguration) /p:PackageVersion=$(nugetVersion) /p:Version=$(buildVersion) /p:FileVersion=$(buildVersion)'
 
     - task: DotNetCoreCLI@2
       displayName: 'Run unit test(s)'
@@ -97,4 +94,8 @@ stages:
         versioningScheme: 'byEnvVar'
         versionEnvVar: 'NugetVersion'
 
-    - task: PublishBuildArtifacts@1  
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
