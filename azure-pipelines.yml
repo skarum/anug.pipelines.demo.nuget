@@ -17,44 +17,69 @@ variables:
 trigger:
 - master
 
-pool:
-  vmImage: 'ubuntu-latest'
+stages:
+- stage: build
+  jobs:
+  - job: SetVersion
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+    - script: |
+        echo '##vso[task.setvariable variable=nugetVersion]$(buildVersion)
+      name: 'Set_Nuget_Version_To_Buildnumber_For_Master_Branch'
+      condition: eq(variables['Build.SourceBranch'],'refs/heads/master')
+      #in case this is a pull request define package version as a rc ( release candidate )
+    - script: | 
+        echo '##vso[task.setvariable variable=nugetVersion]$(buildVersion)-rc$(Build.BuildId)
+      name: 'Set_Nuget_Version_To_Buildnumber_For_Pull_Requests'
+      condition: ne(variables['Build.SourceBranch'],'refs/heads/master')
 
-steps:
-- task: DotNetCoreCLI@2
-  displayName: 'Restore packages'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-    feedsToUse: 'select'
-    versioningScheme: 'off'
-    arguments: '--configuration $(BuildConfiguration)'
+    - powershell: echo "##vso[task.setvariable variable=nugetVersion;isOutput=true]$(nugetVersion)"
+      name: outputNugetVersion
 
-- task: DotNetCoreCLI@2
-  displayName: 'Build projects'
-  inputs:
-    command: 'build'
-    projects: '**/*.csproj'
-    feedsToUse: 'select'
-    versioningScheme: 'byEnvVar'
-    versionEnvVar: 'BuildVersion'
-    arguments: '--configuration $(BuildConfiguration) /p:PackageOutputPath=$(Build.ArtifactStagingDirectory) /p:PackageVersion=$(nugetVersion) /p:Version=$(buildVersion) /p:FileVersion=$(buildVersion)'
+  - job: Build
 
-- task: DotNetCoreCLI@2
-  displayName: 'Run unit test(s)'
-  inputs:
-    command: 'test'
-    projects: '**/Tests.csproj'
-    arguments: '--configuration $(BuildConfiguration)'
+    pool:
+      vmImage: 'ubuntu-latest'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'pack'
-    configuration: $(BuildConfiguration)
-    packDirectory: $(Build.ArtifactStagingDirectory)
-    nobuild: true
-    packagesToPack: '$(PackageCsproj)'
-    versioningScheme: 'byEnvVar'
-    versionEnvVar: 'NugetVersion'
+    variables:
+      nugetVersion: $[ dependencies.Setversion.outputs['outputNugetVersion.nugetVersion'] ]
 
-- task: PublishBuildArtifacts@1  
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore packages'
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+        feedsToUse: 'select'
+        versioningScheme: 'off'
+        arguments: '--configuration $(BuildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build projects'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        feedsToUse: 'select'
+        versioningScheme: 'byEnvVar'
+        versionEnvVar: 'BuildVersion'
+        arguments: '--configuration $(BuildConfiguration) /p:PackageOutputPath=$(Build.ArtifactStagingDirectory) /p:PackageVersion=$(nugetVersion) /p:Version=$(buildVersion) /p:FileVersion=$(buildVersion)'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Run unit test(s)'
+      inputs:
+        command: 'test'
+        projects: '**/Tests.csproj'
+        arguments: '--configuration $(BuildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'pack'
+        configuration: $(BuildConfiguration)
+        packDirectory: $(Build.ArtifactStagingDirectory)
+        nobuild: true
+        packagesToPack: '$(PackageCsproj)'
+        versioningScheme: 'byEnvVar'
+        versionEnvVar: 'NugetVersion'
+
+    - task: PublishBuildArtifacts@1  
