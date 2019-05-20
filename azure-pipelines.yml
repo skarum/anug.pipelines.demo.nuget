@@ -18,3 +18,19 @@ steps:
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
 
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+    feedsToUse: 'select'
+    versioningScheme: 'off'
+    configuration: 'Release'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '''**/*.csproj'''
+    feedsToUse: 'select'
+    versioningScheme: 'off'
+    configuration: 'Release'
+    # arguments: '/p:PackageVersion=$(nugetVersion) /p:Version=$(buildVersion) /p:FileVersion=$(buildVersion)'
