@@ -42,4 +42,4 @@ steps:
   inputs:
     command: 'test'
     projects: '**/Tests.csproj'
-    arguments: 'Release'
+    configuration: 'Release'
