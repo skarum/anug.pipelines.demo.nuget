@@ -34,3 +34,10 @@ steps:
     versioningScheme: 'off'
     configuration: 'Release'
     # arguments: '/p:PackageVersion=$(nugetVersion) /p:Version=$(buildVersion) /p:FileVersion=$(buildVersion)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run unit test(s)'
+  inputs:
+    command: 'test'
+    projects: '**/Tests.csproj'
+    arguments: 'Release'
