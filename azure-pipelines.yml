@@ -21,14 +21,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
-
 - task: DotNetCoreCLI@2
   displayName: 'Restore packages'
   inputs:
@@ -36,7 +28,7 @@ steps:
     projects: '**/*.csproj'
     feedsToUse: 'select'
     versioningScheme: 'off'
-    configuration: $(BuildConfiguration)
+    arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: 'Build projects'
@@ -46,15 +38,14 @@ steps:
     feedsToUse: 'select'
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'BuildVersion'
-    configuration: $(BuildConfiguration)
-    # arguments: '/p:PackageVersion=$(NugetVersion) /p:Version=$(BuildVersion) /p:FileVersion=$(BuildVersion)'
+    arguments: '--configuration $(BuildConfiguration) /p:PackageOutputPath=$(Build.ArtifactStagingDirectory) /p:PackageVersion=$(nugetVersion) /p:Version=$(buildVersion) /p:FileVersion=$(buildVersion)'
 
 - task: DotNetCoreCLI@2
   displayName: 'Run unit test(s)'
   inputs:
     command: 'test'
     projects: '**/Tests.csproj'
-    configuration: $(BuildConfiguration)
+    arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
   inputs:
@@ -65,3 +56,5 @@ steps:
     packagesToPack: '$(PackageCsproj)'
     versioningScheme: 'byEnvVar'
     versionEnvVar: 'NugetVersion'
+
+- task: PublishBuildArtifacts@1  
