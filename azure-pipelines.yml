@@ -49,6 +49,10 @@ stages:
     pool:
       vmImage: 'ubuntu-latest'
 
+    dependsOn:
+    - Setversion
+    condition: succeeded()
+    
     variables:
       nugetVersion: $[ dependencies.Setversion.outputs['outputNugetVersion.nugetVersion'] ]
 
