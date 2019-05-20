@@ -19,6 +19,7 @@ steps:
   displayName: 'Run a multi-line script'
 
 - task: DotNetCoreCLI@2
+  displayName: 'Restore packages'
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
@@ -27,9 +28,10 @@ steps:
     configuration: 'Release'
 
 - task: DotNetCoreCLI@2
+  displayName: 'Build projects'
   inputs:
     command: 'build'
-    projects: '''**/*.csproj'''
+    projects: '**/*.csproj'
     feedsToUse: 'select'
     versioningScheme: 'off'
     configuration: 'Release'
