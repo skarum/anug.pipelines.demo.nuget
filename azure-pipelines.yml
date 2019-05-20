@@ -3,6 +3,17 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+name: $(date:yyyyMMdd)$(rev:.r)-$(SourceBranchName)
+
+variable:
+  Major: '0'
+  Minor: '1'
+  Patch: '1'
+  BuildVersion: $(Major).$(Minor).$(Patch)
+  NugetVersion : $(BuildVersion)-$(Build.SourceBranchName)
+  BuildConfiguration: 'Release'
+  PackageCsproj: $(System.DefaultWorkingDirectory)/**/*NugetPackage.csproj
+
 trigger:
 - master
 
@@ -25,7 +36,7 @@ steps:
     projects: '**/*.csproj'
     feedsToUse: 'select'
     versioningScheme: 'off'
-    configuration: 'Release'
+    configuration: $(BuildConfiguration)
 
 - task: DotNetCoreCLI@2
   displayName: 'Build projects'
@@ -34,12 +45,22 @@ steps:
     projects: '**/*.csproj'
     feedsToUse: 'select'
     versioningScheme: 'off'
-    configuration: 'Release'
-    # arguments: '/p:PackageVersion=$(nugetVersion) /p:Version=$(buildVersion) /p:FileVersion=$(buildVersion)'
+    configuration: $(BuildConfiguration)
+    # arguments: '/p:PackageVersion=$(NugetVersion) /p:Version=$(BuildVersion) /p:FileVersion=$(BuildVersion)'
 
 - task: DotNetCoreCLI@2
   displayName: 'Run unit test(s)'
   inputs:
     command: 'test'
     projects: '**/Tests.csproj'
-    configuration: 'Release'
+    configuration: $(BuildConfiguration)
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'pack'
+    configuration: $(BuildConfiguration)
+    packDirectory: $(Build.ArtifactStagingDirectory)
+    nobuild: true
+    packagesToPack: '$(PackageCsproj)'
+    versioningScheme: byEnvVar
+    versionEnvVar: NugetVersion
