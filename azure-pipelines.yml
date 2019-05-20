@@ -40,6 +40,10 @@ stages:
       name: outputNugetVersion
       displayName: 'Output Nuget version variable to use in next job'
 
+    - bash: echo $(nugetVersion)
+      displayName: 'Write nuget version from Windows'
+
+
   - job: Build
 
     pool:
@@ -49,6 +53,10 @@ stages:
       nugetVersion: $[ dependencies.Setversion.outputs['outputNugetVersion.nugetVersion'] ]
 
     steps:
+
+    - bash: echo $(nugetVersion)
+      displayName: 'Write nuget version from Linux'
+
     - task: DotNetCoreCLI@2
       displayName: 'Restore packages'
       inputs:
